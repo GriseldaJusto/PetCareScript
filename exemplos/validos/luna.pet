@@ -1,0 +1,31 @@
+# Exemplo valido da linguagem PetCareScript
+
+pet "Luna" {
+  especie: cachorro
+  idade: 13
+  tutor: "Karen"
+
+  vacina "Raiva" em 2026-07-10
+  vacina "V10" em 2026-08-01
+
+  remedio "Xarope" dose "2ml" por 5 dias
+
+  rotina {
+    08:00 -> "Dar comida"
+    14:00 -> "Passeio curto"
+    20:00 -> "Dar remedio"
+  }
+}
+
+pet "Mimi" {
+  especie: gato
+  idade: 4
+  tutor: "Ana"
+
+  vacina "Raiva" em 2026-06-20
+
+  rotina {
+    09:30 -> "Trocar agua"
+    18:00 -> "Colocar racao"
+  }
+}

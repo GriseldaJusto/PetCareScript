@@ -1,0 +1,7 @@
+pet "Luna" {
+  idade: 13
+
+  rotina {
+    08:00 -> "Dar comida"
+  }
+}

@@ -1,0 +1,6 @@
+pet "Luna" {
+  especie: cachorro
+  idade: 13
+
+  remedio "Xarope" dose "2ml" por 0 dias
+}

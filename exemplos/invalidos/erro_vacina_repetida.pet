@@ -1,0 +1,7 @@
+pet "Luna" {
+  especie: cachorro
+  idade: 13
+
+  vacina "Raiva" em "2026-07-10"
+  vacina "Raiva" em "2026-08-01"
+}

@@ -1,0 +1,8 @@
+pet "Luna" {
+  especie: cachorro
+  idade: 13
+
+  rotina {
+    25:00 -> "Horario impossivel"
+  }
+}
