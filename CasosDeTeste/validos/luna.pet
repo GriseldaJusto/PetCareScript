@@ -26,6 +26,6 @@ pet "Mimi" {
 
   rotina {
     09:30 -> "Trocar agua"
-    18:00 -> "Colocar racao"
+    18:00 -> "Colocar ração"
   }
 }
