@@ -1,0 +1,2 @@
+Linha 6: horario invalido '25:00'. Use valores entre 00:00 e 23:59
+Fim da compilacao

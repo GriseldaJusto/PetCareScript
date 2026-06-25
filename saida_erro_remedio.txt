@@ -1,0 +1,2 @@
+Linha 5: duracao do remedio deve ser maior que zero
+Fim da compilacao

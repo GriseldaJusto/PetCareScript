@@ -68,12 +68,21 @@ public class Principal {
                 return;
             }
 
-            // Se o código for válido, traduz a AST para uma página HTML
-            GeradorHTML gerador = new GeradorHTML();
+            // Warnings não bloqueiam a compilação: aparecem no terminal e também no HTML gerado.
+            if (semantico.temWarnings()) {
+                System.out.println("Compilacao concluida com avisos:");
+                for (String warning : semantico.getWarnings()) {
+                    System.out.println(warning);
+                }
+            }
+
+            // Se o código for válido, traduz a AST para uma página HTML em formato de dashboard.
+            GeradorHTML gerador = new GeradorHTML(semantico.getWarnings());
             String html = gerador.visitPrograma(arvore);
 
             // Escreve o HTML resultante no arquivo de saída
             pw.println(html);
+            System.out.println("Compilacao concluida com sucesso. Arquivo gerado: " + arquivoSaida);
 
         } catch (IOException e) {
             System.err.println("Erro ao ler/escrever arquivo: " + e.getMessage());

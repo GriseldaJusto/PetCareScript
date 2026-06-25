@@ -1,0 +1,2 @@
+Linha 1: pet 'Luna' deve declarar especie
+Fim da compilacao
