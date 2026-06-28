@@ -17,6 +17,30 @@ public interface PetCareVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitPrograma(PetCareParser.ProgramaContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link PetCareParser#declVacina}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitDeclVacina(PetCareParser.DeclVacinaContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link PetCareParser#campoDeclVacina}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitCampoDeclVacina(PetCareParser.CampoDeclVacinaContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link PetCareParser#declIdade}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitDeclIdade(PetCareParser.DeclIdadeContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link PetCareParser#declValidade}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitDeclValidade(PetCareParser.DeclValidadeContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link PetCareParser#pet}.
 	 * @param ctx the parse tree
 	 * @return the visitor result

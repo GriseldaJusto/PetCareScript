@@ -4,7 +4,29 @@ grammar PetCare;
 
 // Um programa é composto por um ou mais pets
 programa
-    : pet+ EOF
+    : declVacina* pet+ EOF
+    ;
+
+// Declaração global de vacinas
+declVacina
+    : 'vacina' STRING '{' campoDeclVacina* '}'
+    ;
+
+// Campos da vacina
+campoDeclVacina
+    : especie
+    | declIdade
+    | declValidade
+    ;
+
+// Idade ideal para tomar a vacina
+declIdade
+    : 'idade' ':' NUM TEMPO
+    ;
+
+// Duração da vacina
+declValidade
+    : 'validade' ':' NUM TEMPO
     ;
 
 // Pet é composto pela palavra chave, o nome do pet (STRING) e seu bloco de dados ({})
@@ -67,6 +89,12 @@ ESPECIE
     | 'peixe'
     | 'coelho'
     | 'outro'
+    ;
+
+// Tempo para a validade/idade da vacina
+TEMPO
+    : 'ano' 's'?
+    | 'mes' 'es'?
     ;
 
 // Formatação da data (YYYY-MM-DD)

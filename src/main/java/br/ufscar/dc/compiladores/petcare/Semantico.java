@@ -2,10 +2,7 @@ package br.ufscar.dc.compiladores.petcare;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Analisador semântico do PetCareScript.
@@ -52,6 +49,62 @@ public class Semantico extends PetCareBaseVisitor<Void> {
         return warnings;
     }
 
+    // Tabela para guardar as vacinas globais
+    class InfoVacina {
+        String nome;
+        String especie;
+        int idadeMeses;
+        int validadeMeses;
+    }
+
+    // A chave é o nomeVacina_especie
+    private final Map<String, InfoVacina> vacinasGlobais = new HashMap<>();
+
+    @Override
+    public Void visitDeclVacina(PetCareParser.DeclVacinaContext ctx) {
+        String nomeVacina = Util.removeAspas(ctx.STRING().getText()).toLowerCase();
+        String especie = null;
+        int idadeMeses = 0;
+        int validadeMeses = 0;
+
+        int qtdEspecie = 0, qtdIdade = 0, qtdValidade = 0;
+
+        for (PetCareParser.CampoDeclVacinaContext campo : ctx.campoDeclVacina()) {
+            if (campo.especie() != null) {
+                qtdEspecie++;
+                especie = campo.especie().ESPECIE().getText();
+            } else if (campo.declIdade() != null) {
+                qtdIdade++;
+                int num = Integer.parseInt(campo.declIdade().NUM().getText());
+                // Converte tudo para meses para facilitar o cálculo
+                idadeMeses = campo.declIdade().TEMPO().getText().startsWith("ano") ? num * 12 : num;
+            } else if (campo.declValidade() != null) {
+                qtdValidade++;
+                int num = Integer.parseInt(campo.declValidade().NUM().getText());
+                validadeMeses = campo.declValidade().TEMPO().getText().startsWith("ano") ? num * 12 : num;
+            }
+        }
+
+        if (qtdEspecie == 0) adicionarErro(ctx.start.getLine(), "declaracao da vacina '" + nomeVacina + "' deve especificar a especie");
+        if (qtdIdade == 0) adicionarErro(ctx.start.getLine(), "declaracao da vacina '" + nomeVacina + "' deve especificar a idade");
+        if (qtdValidade == 0) adicionarErro(ctx.start.getLine(), "declaracao da vacina '" + nomeVacina + "' deve especificar a validade");
+
+        if (especie != null) {
+            String chave = nomeVacina + "_" + especie;
+            if (vacinasGlobais.containsKey(chave)) {
+                adicionarErro(ctx.start.getLine(), "vacina '" + nomeVacina + "' ja declarada para a especie '" + especie + "'");
+            } else {
+                InfoVacina info = new InfoVacina();
+                info.nome = nomeVacina;
+                info.especie = especie;
+                info.idadeMeses = idadeMeses;
+                info.validadeMeses = validadeMeses;
+                vacinasGlobais.put(chave, info);
+            }
+        }
+        return null;
+    }
+
     @Override
     public Void visitPet(PetCareParser.PetContext ctx) {
         String nomePet = Util.removeAspas(ctx.STRING().getText());
@@ -59,6 +112,15 @@ public class Semantico extends PetCareBaseVisitor<Void> {
         int qtdEspecie = 0;
         int qtdIdade = 0;
         int qtdAcoes = 0;
+
+        String especiePet = null;
+
+        // Analisa a espécie antes de checar as vacinas
+        for (PetCareParser.CampoPetContext campo : ctx.campoPet()) {
+            if (campo.especie() != null) {
+                especiePet = campo.especie().ESPECIE().getText();
+            }
+        }
 
         Set<String> vacinas = new HashSet<>();
         Set<String> horarios = new HashSet<>();
@@ -75,35 +137,38 @@ public class Semantico extends PetCareBaseVisitor<Void> {
                 if (idade > 80) {
                     adicionarErro(campo.idade().start.getLine(),
                             "idade do pet '" + nomePet + "' parece invalida; valor maximo permitido e 80");
-                }
-
-                if (idade > 15 && idade <= 80) {
+                } else if (idade > 15) {
                     adicionarWarning(campo.idade().start.getLine(),
-                            "o pet '" + nomePet
-                                    + "' esta na terceira idade; recomenda-se checagem veterinaria frequente");
+                            "o pet '" + nomePet + "' esta na terceira idade; recomenda-se checagem veterinaria frequente");
                 }
             }
 
             if (campo.vacina() != null) {
                 qtdAcoes++;
-
                 String nomeVacinaOriginal = Util.removeAspas(campo.vacina().STRING().getText());
-                String nomeVacinaNormalizada = nomeVacinaOriginal.toLowerCase();
-                String data = campo.vacina().DATA().getText();
+                String nomeVacina = nomeVacinaOriginal.toLowerCase();
 
-                if (vacinas.contains(nomeVacinaNormalizada)) {
-                    adicionarErro(campo.vacina().start.getLine(),
-                            "vacina '" + nomeVacinaOriginal + "' repetida para o pet '" + nomePet + "'");
+                if (vacinas.contains(nomeVacina)) {
+                    adicionarErro(campo.vacina().start.getLine(), "vacina '" + nomeVacina + "' repetida para o pet '" + nomePet + "'");
                 } else {
-                    vacinas.add(nomeVacinaNormalizada);
+                    vacinas.add(nomeVacina);
                 }
 
-                validarData(data, campo.vacina().start.getLine());
+                String dataString = campo.vacina().DATA().getText();
+                validarData(dataString, campo.vacina().start.getLine());
 
-                if (anoDaData(data) != LocalDate.now().getYear()) {
+                // Checa do ano da vacina
+                int anoVacina = anoDaData(dataString);
+                if (anoVacina != LocalDate.now().getYear()) {
                     adicionarWarning(campo.vacina().start.getLine(),
-                            "a vacina '" + nomeVacinaOriginal + "' do pet '" + nomePet
-                                    + "' nao foi registrada no ano atual e deve ser revisada");
+                            "a vacina '" + nomeVacinaOriginal + "' de '" + nomePet + "' nao e deste ano (" + anoVacina + "); verifique a validade no dashboard");
+                }
+
+                if (especiePet != null) {
+                    String chave = nomeVacina + "_" + especiePet;
+                    if (!vacinasGlobais.containsKey(chave)) {
+                        adicionarErro(campo.vacina().start.getLine(), "vacina '" + nomeVacinaOriginal + "' nao esta registrada para a especie '" + especiePet + "'");
+                    }
                 }
             }
 

@@ -18,6 +18,46 @@ public interface PetCareListener extends ParseTreeListener {
 	 */
 	void exitPrograma(PetCareParser.ProgramaContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link PetCareParser#declVacina}.
+	 * @param ctx the parse tree
+	 */
+	void enterDeclVacina(PetCareParser.DeclVacinaContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link PetCareParser#declVacina}.
+	 * @param ctx the parse tree
+	 */
+	void exitDeclVacina(PetCareParser.DeclVacinaContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link PetCareParser#campoDeclVacina}.
+	 * @param ctx the parse tree
+	 */
+	void enterCampoDeclVacina(PetCareParser.CampoDeclVacinaContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link PetCareParser#campoDeclVacina}.
+	 * @param ctx the parse tree
+	 */
+	void exitCampoDeclVacina(PetCareParser.CampoDeclVacinaContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link PetCareParser#declIdade}.
+	 * @param ctx the parse tree
+	 */
+	void enterDeclIdade(PetCareParser.DeclIdadeContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link PetCareParser#declIdade}.
+	 * @param ctx the parse tree
+	 */
+	void exitDeclIdade(PetCareParser.DeclIdadeContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link PetCareParser#declValidade}.
+	 * @param ctx the parse tree
+	 */
+	void enterDeclValidade(PetCareParser.DeclValidadeContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link PetCareParser#declValidade}.
+	 * @param ctx the parse tree
+	 */
+	void exitDeclValidade(PetCareParser.DeclValidadeContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link PetCareParser#pet}.
 	 * @param ctx the parse tree
 	 */

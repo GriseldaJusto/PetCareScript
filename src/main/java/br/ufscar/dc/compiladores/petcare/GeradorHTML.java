@@ -1,22 +1,28 @@
 package br.ufscar.dc.compiladores.petcare;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 /**
  * Geração de código do PetCareScript.
  *
  * Esta classe percorre a árvore sintática e transforma o programa de entrada
- * em uma página HTML. A versão atual gera um dashboard visual com Bootstrap,
- * cards para cada pet, ícones por espécie, tabelas estilizadas e marcação de
- * vacinas que não pertencem ao ano atual.
+ * em uma página HTML. A versão final gera um dashboard visual com Bootstrap,
+ * calcula datas de vencimento exatas de vacinas e cruza dados para alertar
+ * sobre vacinas recomendadas pendentes.
  */
 public class GeradorHTML extends PetCareBaseVisitor<String> {
     private final StringBuilder saida = new StringBuilder();
     private final List<String> warnings;
+
+    class InfoVacina {
+        String nome;
+        String especie;
+        int idadeMeses;
+        int validadeMeses;
+    }
+    private final Map<String, InfoVacina> vacinasGlobais = new HashMap<>();
 
     /**
      * Construtor usado quando a geração precisa exibir warnings no HTML.
@@ -32,9 +38,36 @@ public class GeradorHTML extends PetCareBaseVisitor<String> {
         this.warnings = new ArrayList<>();
     }
 
-    // Monta o HTML completo: cabeçalho, navbar, painel de warnings e cards dos pets.
+    // Monta o HTML completo: cabeçalho, navbar, painel de warnings e cards dos pets
     @Override
     public String visitPrograma(PetCareParser.ProgramaContext ctx) {
+        // Coleta informações das vacinas antes dos pets
+        for (PetCareParser.DeclVacinaContext decl : ctx.declVacina()) {
+            String nomeVacina = Util.escapeHtml(Util.removeAspas(decl.STRING().getText()));
+            String especie = null;
+            int idadeMeses = 0;
+            int validadeMeses = 0;
+
+            for (PetCareParser.CampoDeclVacinaContext campo : decl.campoDeclVacina()) {
+                if (campo.especie() != null) especie = campo.especie().ESPECIE().getText();
+                else if (campo.declIdade() != null) {
+                    int num = Integer.parseInt(campo.declIdade().NUM().getText());
+                    idadeMeses = campo.declIdade().TEMPO().getText().startsWith("ano") ? num * 12 : num;
+                } else if (campo.declValidade() != null) {
+                    int num = Integer.parseInt(campo.declValidade().NUM().getText());
+                    validadeMeses = campo.declValidade().TEMPO().getText().startsWith("ano") ? num * 12 : num;
+                }
+            }
+            if (especie != null) {
+                InfoVacina info = new InfoVacina();
+                info.nome = nomeVacina;
+                info.especie = especie;
+                info.idadeMeses = idadeMeses;
+                info.validadeMeses = validadeMeses;
+                vacinasGlobais.put(nomeVacina.toLowerCase() + "_" + especie, info);
+            }
+        }
+
         gerarCabecalho();
 
         saida.append("<body>\n");
@@ -68,7 +101,7 @@ public class GeradorHTML extends PetCareBaseVisitor<String> {
         return saida.toString();
     }
 
-    // Gera a tag <head> com Bootstrap via CDN e estilos complementares.
+    // Gera a tag <head> com Bootstrap via CDN e estilos complementares
     private void gerarCabecalho() {
         saida.append("<!DOCTYPE html>\n");
         saida.append("<html lang=\"pt-BR\">\n");
@@ -89,17 +122,17 @@ public class GeradorHTML extends PetCareBaseVisitor<String> {
         saida.append("</head>\n");
     }
 
-    // Exibe os avisos semânticos no topo do dashboard.
+    // Exibe os avisos semânticos no topo do dashboard
     private void gerarPainelWarnings() {
         if (warnings == null || warnings.isEmpty()) {
             saida.append("<div class=\"alert alert-success shadow-sm\" role=\"alert\">\n");
-            saida.append("  ✅ Compilação concluída sem avisos semânticos.\n");
+            saida.append("  ✅ Compilação concluída sem erros semânticos.\n");
             saida.append("</div>\n");
             return;
         }
 
         saida.append("<div class=\"alert alert-warning shadow-sm\" role=\"alert\">\n");
-        saida.append("  <h4 class=\"alert-heading\">⚠️ Avisos semânticos</h4>\n");
+        saida.append("  <h4 class=\"alert-heading\">⚠️ Avisos do Compilador</h4>\n");
         saida.append("  <ul class=\"mb-0\">\n");
         for (String warning : warnings) {
             saida.append("    <li>").append(Util.escapeHtml(warning)).append("</li>\n");
@@ -108,43 +141,69 @@ public class GeradorHTML extends PetCareBaseVisitor<String> {
         saida.append("</div>\n");
     }
 
-    // Extrai os dados de um pet e monta um card Bootstrap.
+    // Extrai os dados de um pet, processa vacinas e monta o card
     private void gerarCardPet(PetCareParser.PetContext ctx) {
         String nome = Util.escapeHtml(Util.removeAspas(ctx.STRING().getText()));
         String especie = "";
-        String idade = "";
+        String idade = "0";
         String tutor = "";
+
+        // Verifica espécie e idade para cálculos
+        for (PetCareParser.CampoPetContext campo : ctx.campoPet()) {
+            if (campo.especie() != null) especie = campo.especie().ESPECIE().getText();
+            if (campo.idade() != null) idade = campo.idade().NUM().getText();
+        }
+
+        int idadeAnos = Integer.parseInt(idade);
+        int idadePetMeses = idadeAnos * 12;
+        Set<String> vacinasTomadas = new HashSet<>();
 
         Map<Integer, List<String>> vacinasPorAno = new TreeMap<>();
         List<String> remedios = new ArrayList<>();
         List<String> rotina = new ArrayList<>();
 
+        // Processa as informações do pet
         for (PetCareParser.CampoPetContext campo : ctx.campoPet()) {
-            if (campo.especie() != null) {
-                especie = campo.especie().ESPECIE().getText();
-            }
-
-            if (campo.idade() != null) {
-                idade = campo.idade().NUM().getText();
-            }
-
             if (campo.tutor() != null) {
                 tutor = Util.escapeHtml(Util.removeAspas(campo.tutor().STRING().getText()));
             }
 
             if (campo.vacina() != null) {
-                String nomeVacina = Util.escapeHtml(Util.removeAspas(campo.vacina().STRING().getText()));
+                String nomeVacinaOriginal = Util.removeAspas(campo.vacina().STRING().getText());
+                String nomeVacinaHtml = Util.escapeHtml(nomeVacinaOriginal);
                 String data = campo.vacina().DATA().getText();
                 int ano = Integer.parseInt(data.substring(0, 4));
-                boolean vencida = ano != LocalDate.now().getYear();
+
+                vacinasTomadas.add(nomeVacinaOriginal.toLowerCase());
+
+                boolean vencida = false;
+                String chave = nomeVacinaOriginal.toLowerCase() + "_" + especie;
+                String proximaDoseStr = "<span class=\"text-muted\">Não informada</span>";
+
+                // Formatador para deixar a data no padrão brasileiro (DD/MM/YYYY)
+                DateTimeFormatter formatador = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+                LocalDate dataAplicada = LocalDate.parse(data);
+                String dataFormatada = dataAplicada.format(formatador);
+
+                // Cálculo real de validade da vacina e próxima dose
+                if (vacinasGlobais.containsKey(chave)) {
+                    InfoVacina info = vacinasGlobais.get(chave);
+                    LocalDate dataValidade = dataAplicada.plusMonths(info.validadeMeses);
+                    vencida = LocalDate.now().isAfter(dataValidade);
+
+                    proximaDoseStr = "<strong>" + dataValidade.format(formatador) + "</strong>";
+                } else {
+                    vencida = ano != LocalDate.now().getYear(); // Fallback genérico
+                }
 
                 String linha = "<tr>"
-                        + "<td>" + nomeVacina + "</td>"
-                        + "<td>" + data + "</td>"
+                        + "<td>" + nomeVacinaHtml + "</td>"
+                        + "<td>" + dataFormatada + "</td>"
+                        + "<td>" + proximaDoseStr + "</td>"
                         + "<td>" + statusVacina(vencida) + "</td>"
                         + "</tr>\n";
 
-                vacinasPorAno.computeIfAbsent(ano, chave -> new ArrayList<>()).add(linha);
+                vacinasPorAno.computeIfAbsent(ano, chaveAno -> new ArrayList<>()).add(linha);
             }
 
             if (campo.remedio() != null) {
@@ -152,11 +211,7 @@ public class GeradorHTML extends PetCareBaseVisitor<String> {
                 String dose = Util.escapeHtml(Util.removeAspas(campo.remedio().STRING(1).getText()));
                 String dias = campo.remedio().NUM().getText();
 
-                remedios.add("<tr>"
-                        + "<td>" + nomeRemedio + "</td>"
-                        + "<td>" + dose + "</td>"
-                        + "<td>" + dias + " dias</td>"
-                        + "</tr>\n");
+                remedios.add("<tr><td>" + nomeRemedio + "</td><td>" + dose + "</td><td>" + dias + " dias</td></tr>\n");
             }
 
             if (campo.rotina() != null) {
@@ -164,14 +219,23 @@ public class GeradorHTML extends PetCareBaseVisitor<String> {
                     String hora = item.HORA().getText();
                     String atividade = Util.escapeHtml(Util.removeAspas(item.STRING().getText()));
 
-                    rotina.add("<tr>"
-                            + "<td><span class=\"badge text-bg-primary\">" + hora + "</span></td>"
-                            + "<td>" + atividade + "</td>"
-                            + "</tr>\n");
+                    rotina.add("<tr><td><span class=\"badge text-bg-primary\">" + hora + "</span></td><td>" + atividade + "</td></tr>\n");
                 }
             }
         }
 
+        // Identifica vacinas recomendadas que estão faltando
+        List<String> vacinasPendentes = new ArrayList<>();
+        for (InfoVacina info : vacinasGlobais.values()) {
+            if (info.especie.equals(especie)) {
+                if (idadePetMeses >= info.idadeMeses && !vacinasTomadas.contains(info.nome.toLowerCase())) {
+                    String idadeFormatada = info.idadeMeses >= 12 ? (info.idadeMeses / 12) + " anos" : info.idadeMeses + " meses";
+                    vacinasPendentes.add("<li><strong>" + Util.escapeHtml(info.nome) + "</strong> (Recomendada a partir de " + idadeFormatada + ")</li>");
+                }
+            }
+        }
+
+        // Construção Visual do Card
         saida.append("<div class=\"col-12 col-lg-6\">\n");
         saida.append("  <div class=\"card shadow-sm h-100\">\n");
         saida.append("    <div class=\"card-header bg-white d-flex align-items-center gap-3\">\n");
@@ -189,6 +253,18 @@ public class GeradorHTML extends PetCareBaseVisitor<String> {
         }
         saida.append("      </div>\n");
 
+        // Painel de Alerta (Aparece apenas se faltar vacina)
+        if (!vacinasPendentes.isEmpty()) {
+            saida.append("      <div class=\"alert alert-warning p-2 mt-2 mb-3\" style=\"font-size: 0.9rem;\">\n");
+            saida.append("        <strong class=\"d-block mb-1\">⚠️ Saúde: Vacinas Pendentes</strong>\n");
+            saida.append("        <ul class=\"mb-0 ps-3\">\n");
+            for (String pendente : vacinasPendentes) {
+                saida.append("          ").append(pendente).append("\n");
+            }
+            saida.append("        </ul>\n");
+            saida.append("      </div>\n");
+        }
+
         gerarTabelaVacinas(vacinasPorAno);
         gerarTabelaRemedios(remedios);
         gerarTabelaRotina(rotina);
@@ -198,18 +274,17 @@ public class GeradorHTML extends PetCareBaseVisitor<String> {
         saida.append("</div>\n");
     }
 
-    // Gera tabelas de vacinas agrupadas por ano.
+    // Gera tabelas de vacinas agrupadas por ano
     private void gerarTabelaVacinas(Map<Integer, List<String>> vacinasPorAno) {
-        if (vacinasPorAno.isEmpty()) {
-            return;
-        }
+        if (vacinasPorAno.isEmpty()) return;
 
-        saida.append("<div class=\"section-title\">💉 Vacinas por ano</div>\n");
+        saida.append("<div class=\"section-title\">💉 Histórico de Vacinas</div>\n");
         for (Map.Entry<Integer, List<String>> entrada : vacinasPorAno.entrySet()) {
             saida.append("<h6 class=\"mt-3 text-muted\">Ano ").append(entrada.getKey()).append("</h6>\n");
             saida.append("<div class=\"table-responsive\">\n");
             saida.append("<table class=\"table table-sm table-striped align-middle\">\n");
-            saida.append("<thead><tr><th>Vacina</th><th>Data</th><th>Status</th></tr></thead>\n");
+            // Atualização do cabeçalho da tabela com as novas colunas
+            saida.append("<thead><tr><th>Vacina</th><th>Data de Aplicação</th><th>Próxima Dose</th><th>Status</th></tr></thead>\n");
             saida.append("<tbody>\n");
             for (String linha : entrada.getValue()) {
                 saida.append(linha);
@@ -220,11 +295,9 @@ public class GeradorHTML extends PetCareBaseVisitor<String> {
         }
     }
 
-    // Gera a tabela de remédios cadastrados.
+    // Gera a tabela de remédios cadastrados
     private void gerarTabelaRemedios(List<String> remedios) {
-        if (remedios.isEmpty()) {
-            return;
-        }
+        if (remedios.isEmpty()) return;
 
         saida.append("<div class=\"section-title\">💊 Remédios</div>\n");
         saida.append("<div class=\"table-responsive\">\n");
@@ -239,11 +312,9 @@ public class GeradorHTML extends PetCareBaseVisitor<String> {
         saida.append("</div>\n");
     }
 
-    // Gera a tabela de rotina diária.
+    // Gera a tabela de rotina diária
     private void gerarTabelaRotina(List<String> rotina) {
-        if (rotina.isEmpty()) {
-            return;
-        }
+        if (rotina.isEmpty()) return;
 
         saida.append("<div class=\"section-title\">🕒 Rotina diária</div>\n");
         saida.append("<div class=\"table-responsive\">\n");
@@ -258,29 +329,23 @@ public class GeradorHTML extends PetCareBaseVisitor<String> {
         saida.append("</div>\n");
     }
 
-    // Retorna o selo visual de status da vacina.
+    // Retorna o selo visual de status da vacina
     private String statusVacina(boolean vencida) {
         if (vencida) {
-            return "<span class=\"badge badge-vencida\">[VENCIDA]</span>";
+            return "<span class=\"badge badge-vencida\">VENCIDA</span>";
         }
         return "<span class=\"badge badge-em-dia\">EM DIA</span>";
     }
 
-    // Escolhe um ícone de acordo com a espécie declarada.
+    // Escolhe um ícone de acordo com a espécie declarada
     private String iconeEspecie(String especie) {
         switch (especie) {
-            case "cachorro":
-                return "🐶";
-            case "gato":
-                return "🐱";
-            case "passaro":
-                return "🐦";
-            case "peixe":
-                return "🐟";
-            case "coelho":
-                return "🐰";
-            default:
-                return "🐾";
+            case "cachorro": return "🐶";
+            case "gato": return "🐱";
+            case "passaro": return "🐦";
+            case "peixe": return "🐟";
+            case "coelho": return "🐰";
+            default: return "🐾";
         }
     }
 }
