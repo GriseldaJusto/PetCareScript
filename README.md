@@ -243,6 +243,18 @@ java -jar target/PetCareScript.jar CasosDeTeste/invalidos/erro_sem_especie.pet s
 java -jar target/PetCareScript.jar CasosDeTeste/invalidos/erro_data_invalida.pet saida_erro_data.txt
 ```
 
+### Vacina não registrada:
+
+```bash
+java -jar target/PetCareScript.jar CasosDeTeste/invalidos/erro_vacina_nao_registrada.pet saida_erro_vacina_nao_registrada.txt
+```
+
+### Vacina incompatível com a espécie:
+
+```bash
+java -jar target/PetCareScript.jar CasosDeTeste/invalidos/erro_vacina_especie_incompativel.pet saida_erro_especie_incompativel.txt
+```
+
 ---
 
 ## Vídeo demonstrativo
