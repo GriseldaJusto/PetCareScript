@@ -221,18 +221,10 @@ mvn clean package
 Execute o compilador passando o arquivo de entrada `.pet` e o arquivo HTML de saída.
 
 ```bash
-java -jar target/PetCareScript.jar CasosDeTeste/validos/dashboard_alertas.pet dashboard_alertas.html
-```
-
-```bash
-java -jar target/PetCareScript.jar CasosDeTeste/validos/luna.pet saida.html
-```
-
-```bash
 java -jar target/PetCareScript.jar CasosDeTeste/validos/dashboard_completo.pet dashboard_completo.html
 ```
 
-Depois, abra o arquivo `dashboard_alertas.html`, `saida.html` e `dashboard_completo.html`  no navegador.
+Depois, abra o arquivo `dashboard_completo.html` no navegador.
 
 ---
 
@@ -243,6 +235,23 @@ Os casos de teste estão na pasta:
 ```txt
 CasosDeTeste/
 ```
+
+O projeto disponibiliza diversos casos de teste para demonstrar o funcionamento da linguagem e validar as verificações implementadas pelo compilador.
+
+| Caso de teste | Objetivo |
+|---------------|----------|
+| `luna.pet` | Exemplo completo da linguagem |
+| `dashboard_alertas.pet` | Demonstra o dashboard visual, alertas, vacinas pendentes e vacinas vencidas |
+| `dashboard_completo.pet` | Demonstra o dashboard final com múltiplas espécies, vacinas pendentes, vencidas, em dia, cálculo da próxima dose, warnings, remédios e rotina completa |
+| `erro_vacina_repetida.pet` | Detecta vacinas duplicadas para um mesmo pet |
+| `erro_horario.pet` | Detecta horários inválidos na rotina diária |
+| `erro_remedio.pet` | Detecta duração inválida de um medicamento |
+| `erro_sem_especie.pet` | Detecta ausência da espécie do pet |
+| `erro_data_invalida.pet` | Detecta datas inválidas de vacinação |
+| `erro_vacina_nao_registrada.pet` | Detecta o uso de uma vacina que não foi previamente cadastrada |
+| `erro_vacina_especie_incompativel.pet` | Detecta o uso de uma vacina incompatível com a espécie do pet |
+
+Após a compilação do projeto, os casos de teste podem ser executados utilizando os comandos apresentados abaixo.
 
 ### Caso válido simples
 
