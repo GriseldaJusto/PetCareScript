@@ -1,8 +1,10 @@
 # PetCareScript - Trabalho 6 de Construção de Compiladores
 
-PetCareScript é uma DSL declarativa para descrever cuidados básicos de pets, como vacinas, remédios e rotinas diárias.
+O **PetCareScript** é uma Linguagem Específica de Domínio (Domain Specific Language – DSL) declarativa desenvolvida para facilitar o gerenciamento de cuidados de animais de estimação.
 
-O compilador lê um arquivo `.pet`, realiza análise léxica, sintática e semântica, e gera como saída uma página HTML em formato de dashboard visual.
+A linguagem permite cadastrar pets, definir vacinas por espécie, registrar medicamentos e rotinas diárias de forma simples, padronizada e intuitiva.
+
+Durante a compilação, o compilador realiza análises léxica, sintática e semântica para validar as informações fornecidas e gerar automaticamente um dashboard em HTML contendo o histórico dos pets, alertas, vacinas pendentes, vacinas vencidas e demais informações organizadas.
 
 ---
 
