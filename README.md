@@ -240,7 +240,7 @@ O projeto disponibiliza diversos casos de teste para demonstrar o funcionamento 
 
 | Caso de teste | Objetivo |
 |---------------|----------|
-| `luna.pet` | Exemplo completo da linguagem |
+| `luna.pet` | Exemplo da linguagem sem erros semânticos |
 | `dashboard_alertas.pet` | Demonstra o dashboard visual, alertas, vacinas pendentes e vacinas vencidas |
 | `dashboard_completo.pet` | Demonstra o dashboard final com múltiplas espécies, vacinas pendentes, vencidas, em dia, cálculo da próxima dose, warnings, remédios e rotina completa |
 | `erro_vacina_repetida.pet` | Detecta vacinas duplicadas para um mesmo pet |
