@@ -1,0 +1,2 @@
+Linha 11: vacina 'Raiva' não está registrada para a especie 'cachorro'
+Fim da compilacao

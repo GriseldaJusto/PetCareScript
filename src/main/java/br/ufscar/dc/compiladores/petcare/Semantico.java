@@ -161,13 +161,13 @@ public class Semantico extends PetCareBaseVisitor<Void> {
                 int anoVacina = anoDaData(dataString);
                 if (anoVacina != LocalDate.now().getYear()) {
                     adicionarWarning(campo.vacina().start.getLine(),
-                            "a vacina '" + nomeVacinaOriginal + "' de '" + nomePet + "' nao e deste ano (" + anoVacina + "); verifique a validade no dashboard");
+                            "a vacina '" + nomeVacinaOriginal + "' de '" + nomePet + "' não é deste ano (" + anoVacina + "); verifique a validade no dashboard");
                 }
 
                 if (especiePet != null) {
                     String chave = nomeVacina + "_" + especiePet;
                     if (!vacinasGlobais.containsKey(chave)) {
-                        adicionarErro(campo.vacina().start.getLine(), "vacina '" + nomeVacinaOriginal + "' nao esta registrada para a especie '" + especiePet + "'");
+                        adicionarErro(campo.vacina().start.getLine(), "vacina '" + nomeVacinaOriginal + "' não está registrada para a especie '" + especiePet + "'");
                     }
                 }
             }

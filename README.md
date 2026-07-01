@@ -29,17 +29,26 @@ O PetCareScript possui as seguintes características:
   - espécie;
   - idade;
   - tutor;
-- Cadastro de vacinas;
+- Cadastro global de vacinas, permitindo definir:
+  - espécie à qual a vacina se aplica;
+  - idade recomendada para aplicação;
+  - período de validade;
 - Cadastro de medicamentos;
 - Cadastro de rotinas diárias;
-- Verificações semânticas para garantir a consistência dos dados;
+- Verificações semânticas para garantir a consistência dos dados, incluindo:
+  - validação de vacinas previamente cadastradas;
+  - verificação de compatibilidade entre vacina e espécie do pet;
+  - detecção de vacinas duplicadas;
+  - validação de horários, datas e duração de medicamentos;
 - Sistema de erros semânticos que bloqueiam a compilação;
 - Sistema de warnings que avisam sobre possíveis problemas sem impedir a geração do HTML;
+- Cálculo automático da próxima dose das vacinas;
+- Identificação de vacinas pendentes para cada pet;
 - Geração automática de uma página HTML com Bootstrap;
-- Cards visuais para cada pet;
-- Ícones diferentes dependendo da espécie;
-- Vacinas separadas por ano;
-- Marcação visual de vacinas fora do ano atual como `[VENCIDA]`.
+- Dashboard visual com cards para cada pet;
+- Ícones específicos para cada espécie;
+- Vacinas agrupadas por ano;
+- Marcação visual de vacinas vencidas como `VENCIDA`.
 
 ---
 
@@ -47,9 +56,29 @@ O PetCareScript possui as seguintes características:
 
 A linguagem foi criada para permitir que tutores descrevam, de maneira simples e legível, informações importantes sobre seus animais de estimação.
 
+Inicialmente são cadastradas as vacinas disponíveis, informando para qual espécie elas se aplicam, a idade recomendada para aplicação e sua validade. Em seguida, são cadastrados os pets e os cuidados relacionados a cada um deles.
+
 Exemplo:
 
 ```txt
+vacina "Raiva" {
+  especie: cachorro
+  idade: 2 anos
+  validade: 1 anos
+}
+
+vacina "V10" {
+  especie: cachorro
+  idade: 2 meses
+  validade: 1 anos
+}
+
+vacina "Raiva" {
+  especie: gato
+  idade: 2 meses
+  validade: 1 anos
+}
+
 pet "Luna" {
   especie: cachorro
   idade: 16
@@ -99,17 +128,22 @@ Após a construção da árvore sintática, o compilador executa verificações 
 
 Essas verificações não são apenas estruturais, mas relacionadas ao significado das informações fornecidas.
 
+Além das validações básicas, a linguagem mantém um cadastro global de vacinas, permitindo verificar automaticamente se uma vacina aplicada foi previamente declarada, se é compatível com a espécie do pet e se está dentro das regras definidas pela linguagem.
+
 ### 4. Geração de Código
 
-Se não houver erros, o compilador gera um arquivo HTML com um dashboard visual contendo:
+Se não forem encontrados erros semânticos, o compilador gera automaticamente um arquivo HTML em formato de dashboard contendo:
 
-- cards dos pets;
-- ícones por espécie;
-- tabelas de vacinas;
-- tabelas de remédios;
-- tabela de rotina diária;
-- painel de avisos semânticos;
-- indicação visual de vacinas vencidas.
+- cards individuais para cada pet;
+- ícones representativos de acordo com a espécie;
+- tabelas organizadas com as vacinas aplicadas;
+- tabelas com os medicamentos cadastrados;
+- tabela da rotina diária;
+- painel com os avisos (warnings) gerados durante a compilação;
+- indicação visual de vacinas vencidas;
+- cálculo automático da próxima dose de cada vacina;
+- exibição das vacinas pendentes para cada pet;
+- status das vacinas com base na validade declarada.
 
 ---
 
@@ -136,35 +170,40 @@ O compilador implementa as seguintes verificações semânticas que geram **erro
 7. A duração de um remédio deve ser maior que zero.
 8. Cada pet deve possuir pelo menos uma vacina, remédio ou rotina.
 9. Datas de vacina devem representar datas reais.
+10. Toda vacina aplicada deve estar previamente cadastrada na seção de definição de vacinas.
+11. A vacina aplicada deve ser compatível com a espécie do pet.
+12. Não pode haver duas definições da mesma vacina para uma mesma espécie.
 
 Além dos erros, o compilador também implementa **warnings**, que não bloqueiam a compilação:
 
 1. Se o pet tiver mais de 15 anos, o compilador gera um aviso recomendando checagem veterinária frequente.
-2. Se uma vacina não estiver registrada no ano atual, o compilador gera um aviso e o HTML marca a vacina como `[VENCIDA]`.
+2. O dashboard informa visualmente quando uma vacina está vencida e apresenta informações sobre a próxima dose e vacinas pendentes, com base nas regras cadastradas para cada vacina.
 
 ---
 
 ## Geração de Código
 
-Após as análises, o compilador gera uma página HTML contendo um dashboard visual utilizando Bootstrap via CDN no cabeçalho do HTML gerado.
+Após as análises léxica, sintática e semântica, o compilador gera automaticamente uma página HTML em formato de dashboard utilizando Bootstrap via CDN.
 
-O dashboard possui:
+O dashboard apresenta, de forma organizada e intuitiva, todas as informações cadastradas sobre os pets, além dos resultados das verificações realizadas durante a compilação.
+
+O HTML gerado possui:
 
 - barra superior com o nome da linguagem;
-- painel de avisos semânticos;
-- cards para cada pet;
-- ícones por espécie:
+- painel de avisos semânticos (warnings);
+- cards individuais para cada pet;
+- ícones específicos para cada espécie:
   - cachorro: 🐶
   - gato: 🐱
-  - pássaro: 🐦
-  - peixe: 🐟
-  - coelho: 🐰
   - outro: 🐾
+- informações do pet (nome, espécie, idade e tutor);
 - vacinas agrupadas por ano;
-- selo `EM DIA` para vacinas do ano atual;
-- selo `[VENCIDA]` para vacinas fora do ano atual;
-- tabelas estilizadas para remédios e rotina diária.
-
+- cálculo automático da próxima dose de cada vacina;
+- indicação de vacinas pendentes de acordo com as regras cadastradas;
+- selo `EM DIA` para vacinas válidas;
+- selo `VENCIDA` para vacinas fora do período de validade;
+- tabelas estilizadas para medicamentos;
+- tabela organizada para a rotina diária.
 ---
 
 ## Como compilar
@@ -189,7 +228,11 @@ java -jar target/PetCareScript.jar CasosDeTeste/validos/dashboard_alertas.pet da
 java -jar target/PetCareScript.jar CasosDeTeste/validos/luna.pet saida.html
 ```
 
-Depois, abra o arquivo `dashboard_alertas.html` e `saida.html` no navegador.
+```bash
+java -jar target/PetCareScript.jar CasosDeTeste/validos/dashboard_completo.pet dashboard_completo.html
+```
+
+Depois, abra o arquivo `dashboard_alertas.html`, `saida.html` e `dashboard_completo.html`  no navegador.
 
 ---
 
@@ -211,6 +254,12 @@ java -jar target/PetCareScript.jar CasosDeTeste/validos/luna.pet saida.html
 
 ```bash
 java -jar target/PetCareScript.jar CasosDeTeste/validos/dashboard_alertas.pet dashboard_alertas.html
+```
+
+### Caso válido com dashboard completo
+
+```bash
+java -jar target/PetCareScript.jar CasosDeTeste/validos/dashboard_completo.pet dashboard_completo.html
 ```
 
 ### Erro: vacina repetida

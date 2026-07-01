@@ -1,4 +1,8 @@
-# Data com mês inválido. A gramática aceita o formato, mas a análise semântica rejeita a data real.
+vacina "Raiva" {
+  especie: cachorro
+  idade: 2 anos
+  validade: 1 anos
+}
 
 pet "Luna" {
   especie: cachorro

@@ -1,6 +1,6 @@
 vacina "Raiva" {
-  especie: cachorro
-  idade: 2 anos
+  especie: gato
+  idade: 2 meses
   validade: 1 anos
 }
 
@@ -9,5 +9,4 @@ pet "Luna" {
   idade: 13
 
   vacina "Raiva" em 2026-07-10
-  vacina "Raiva" em 2026-08-01
 }

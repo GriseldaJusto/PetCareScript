@@ -1,0 +1,117 @@
+# Caso válido completo para demonstrar o dashboard final do PetCareScript.
+# Este exemplo mostra:
+# - cadastro global de vacinas por espécie;
+# - vacina vencida;
+# - vacina em dia;
+# - vacina pendente;
+# - cálculo automático da próxima dose;
+# - warnings;
+# - remédios;
+# - rotina diária;
+# - diferentes espécies e ícones no dashboard.
+
+vacina "Raiva" {
+  especie: cachorro
+  idade: 2 anos
+  validade: 1 anos
+}
+
+vacina "V10" {
+  especie: cachorro
+  idade: 2 meses
+  validade: 2 anos
+}
+
+vacina "Gripe Canina" {
+  especie: cachorro
+  idade: 6 meses
+  validade: 1 anos
+}
+
+vacina "Raiva" {
+  especie: gato
+  idade: 1 anos
+  validade: 2 anos
+}
+
+vacina "Tríplice Felina" {
+  especie: gato
+  idade: 2 meses
+  validade: 1 anos
+}
+
+vacina "Bouba Aviária" {
+  especie: passaro
+  idade: 3 meses
+  validade: 1 anos
+}
+
+pet "Bolinha" {
+  especie: cachorro
+  idade: 3
+  tutor: "Ana"
+
+  vacina "Raiva" em 2020-05-10
+
+  remedio "Antipulgas" dose "1 comprimido" por 3 dias
+  remedio "Vermifugo" dose "5ml" por 2 dias
+
+  rotina {
+    07:30 -> "Colocar racao e trocar a agua"
+    08:00 -> "Passear no parque"
+    13:00 -> "Dar antipulgas"
+    18:30 -> "Segundo passeio do dia"
+    21:00 -> "Dar vermifugo"
+  }
+}
+
+pet "Miau" {
+  especie: gato
+  idade: 2
+  tutor: "Carlos"
+
+  vacina "Raiva" em 2026-01-01
+  vacina "Tríplice Felina" em 2026-02-15
+
+  remedio "Suplemento" dose "1 sache" por 7 dias
+
+  rotina {
+    08:00 -> "Trocar agua"
+    09:00 -> "Colocar racao"
+    16:00 -> "Escovar os pelos"
+    20:00 -> "Limpar caixa de areia"
+  }
+}
+
+pet "PiuPiu" {
+  especie: passaro
+  idade: 1
+  tutor: "Marina"
+
+  remedio "Vitaminas" dose "3 gotas" por 10 dias
+
+  rotina {
+    06:30 -> "Trocar agua do bebedouro"
+    07:00 -> "Colocar sementes"
+    12:00 -> "Limpar gaiola"
+    18:00 -> "Cobrir gaiola"
+  }
+}
+
+pet "Thor" {
+  especie: cachorro
+  idade: 16
+  tutor: "Beatriz"
+
+  vacina "Raiva" em 2026-04-01
+  vacina "V10" em 2021-09-15
+
+  remedio "Condroprotetor" dose "1 comprimido" por 30 dias
+
+  rotina {
+    07:00 -> "Caminhada leve"
+    12:00 -> "Alimentacao especial"
+    18:00 -> "Caminhada curta"
+    22:00 -> "Medicamento noturno"
+  }
+}

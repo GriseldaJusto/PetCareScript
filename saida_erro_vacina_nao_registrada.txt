@@ -1,0 +1,2 @@
+Linha 5: vacina 'Giardia' não está registrada para a especie 'cachorro'
+Fim da compilacao

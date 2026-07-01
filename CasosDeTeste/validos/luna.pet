@@ -1,5 +1,23 @@
 # Exemplo valido da linguagem PetCareScript
 
+vacina "Raiva" {
+  especie: cachorro
+  idade: 2 anos
+  validade: 1 anos
+}
+
+vacina "V10" {
+  especie: cachorro
+  idade: 2 meses
+  validade: 1 anos
+}
+
+vacina "Raiva" {
+  especie: gato
+  idade: 2 meses
+  validade: 1 anos
+}
+
 pet "Luna" {
   especie: cachorro
   idade: 13

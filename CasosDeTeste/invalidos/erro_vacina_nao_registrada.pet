@@ -1,0 +1,6 @@
+pet "Luna" {
+  especie: cachorro
+  idade: 13
+
+  vacina "Giardia" em 2026-07-10
+}
